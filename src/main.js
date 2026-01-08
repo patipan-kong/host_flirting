@@ -24,6 +24,23 @@ const emotionFaces = {
   'sleepy': '😴'
 };
 
+// LocalStorage Helper Functions
+function saveChatSession(hostId, history) {
+  const key = `chat_session_${hostId}`;
+  localStorage.setItem(key, JSON.stringify(history));
+}
+
+function loadChatSession(hostId) {
+  const key = `chat_session_${hostId}`;
+  const saved = localStorage.getItem(key);
+  return saved ? JSON.parse(saved) : [];
+}
+
+function clearChatSession(hostId) {
+  const key = `chat_session_${hostId}`;
+  localStorage.removeItem(key);
+}
+
 // Initialize App
 async function initApp() {
   try {
@@ -88,7 +105,7 @@ function createHostCard(host) {
           ${host.basic_info.name}
         </h3>
         <p class="text-gray-400 text-sm">${host.basic_info.full_jp_name}</p>
-        <p class="text-purple-300 text-xs mt-1">${host.basic_info['ฉายา'].substring(0, 50)}...</p>
+        <p class="text-purple-300 text-xs mt-1">${host.basic_info['称号'].substring(0, 50)}...</p>
       </div>
       <div>
         <button class="chat-btn bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-full text-sm hover:scale-105 transition-transform">
@@ -141,10 +158,10 @@ function showHostProfile(host) {
       
       <!-- Basic Profile -->
       <div class="bg-gray-800 rounded-lg p-4 border border-purple-500">
-        <h3 class="text-purple-400 font-bold mb-3 text-lg">Basic Profile</h3>
+        <h3 class="text-purple-400 font-bold mb-3 text-lg">基本プロフィール</h3>
         <div class="space-y-2 text-sm">
-          <p class="text-white"><span class="text-gray-400">อาชีพ:</span> ${host.basic_info['อาชีพ']}</p>
-          <p class="text-white"><span class="text-gray-400">ฉายา:</span> ${host.basic_info['ฉายา']}</p>
+          <p class="text-white"><span class="text-gray-400">職業:</span> ${host.basic_info['職業']}</p>
+          <p class="text-white"><span class="text-gray-400">称号:</span> ${host.basic_info['称号']}</p>
           <p class="text-white"><span class="text-gray-400">誕生日:</span> ${host.basic_info['誕生日']}</p>
           <p class="text-white"><span class="text-gray-400">身長:</span> ${host.basic_info['身長']}</p>
           <p class="text-white"><span class="text-gray-400">血液型:</span> ${host.basic_info['血液型']}</p>
@@ -154,7 +171,7 @@ function showHostProfile(host) {
       
       <!-- Status Chart -->
       <div class="bg-gray-800 rounded-lg p-4 border border-purple-500">
-        <h3 class="text-purple-400 font-bold mb-3 text-lg">Status Chart</h3>
+        <h3 class="text-purple-400 font-bold mb-3 text-lg">ステータスチャート</h3>
         <div class="space-y-2 text-sm">
           ${Object.entries(host['Status Chart']).map(([key, value]) => `
             <p class="text-white"><span class="text-gray-400">${key}:</span> ${value}</p>
@@ -183,7 +200,9 @@ function showHostProfile(host) {
 // Start Chat
 function startChat(host) {
   currentHost = host;
-  chatHistory = [];
+  
+  // Load existing chat history from localStorage
+  chatHistory = loadChatSession(host.id);
   
   // Update chat header
   const avatarPath = `${host.basic_info.thumbnail}`;
@@ -194,10 +213,48 @@ function startChat(host) {
   document.getElementById('chatHostName').textContent = host.basic_info.name;
   
   // Clear chat messages
-  document.getElementById('chatMessages').innerHTML = '';
+  const messagesContainer = document.getElementById('chatMessages');
+  messagesContainer.innerHTML = '';
   
-  // Add welcome message
-  addMessage('host', `こんにちは！${host.basic_info.name}です。今日はどうされましたか？`, 'happy');
+  // If there's existing chat history, restore it
+  if (chatHistory.length > 0) {
+    chatHistory.forEach(msg => {
+      const sender = msg.role === 'user' ? 'user' : 'host';
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+      
+      const text = msg.parts[0].text;
+      let displayText = text;
+      let displayEmotion = null;
+      
+      const emotionMatch = text.match(/<face:(.*?)>/);
+      if (emotionMatch) {
+        displayEmotion = emotionMatch[1];
+        displayText = text.replace(/<face:.*?>/, '').trim();
+      }
+      
+      const bubbleClass = sender === 'user' 
+        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' 
+        : 'bg-gray-800 text-white border border-purple-500';
+      
+      messageDiv.innerHTML = `
+        <div class="message-bubble ${bubbleClass} rounded-lg p-3 shadow-lg">
+          <p class="text-sm">${displayText}</p>
+          ${displayEmotion && emotionFaces[displayEmotion] ? `
+            <div class="face-emotion mt-2">
+              ${emotionFaces[displayEmotion]}
+            </div>
+          ` : ''}
+        </div>
+      `;
+      
+      messagesContainer.appendChild(messageDiv);
+    });
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  } else {
+    // Add welcome message only if no history
+    addMessage('host', `こんにちは！${host.basic_info.name}です。今日はどうされましたか？`, 'happy');
+  }
   
   // Switch views
   document.getElementById('hostListView').classList.add('hidden');
@@ -244,6 +301,11 @@ function addMessage(sender, text, emotion = null) {
   
   // Store in chat history
   chatHistory.push({ role: sender === 'user' ? 'user' : 'model', parts: [{ text: text }] });
+  
+  // Save to localStorage
+  if (currentHost) {
+    saveChatSession(currentHost.id, chatHistory);
+  }
 }
 
 // Show Typing Indicator
@@ -350,10 +412,10 @@ The assistant MUST reply in the language specified by: Japanese
 ■ CHARACTER IDENTITY
 ━━━━━━━━━━━━━━━━━━━━
 You are ${basicInfo.name} (${basicInfo.full_jp_name})
-${basicInfo['ฉายา']}
+${basicInfo['称号']}
 
 Basic Info:
-- อาชีพ: ${basicInfo['อาชีพ']}
+- 職業: ${basicInfo['職業']}
 - 誕生日: ${basicInfo['誕生日']}
 - 身長: ${basicInfo['身長']}
 - 血液型: ${basicInfo['血液型']}
@@ -361,12 +423,12 @@ Basic Info:
 
 ${profile ? `
 Personality and Style:
-- บุคลิก: ${profile['บุคลิก']}
-- ภาพลักษณ์: ${profile['ภาพลักษณ์ภายนอกและภายใน']}
-- สไตล์การเข้าสังคม: ${profile['สไตล์การเข้าสังคม']}
-- ลักษณะการพูด: ${profile['ลักษณะการพูด']}
-- สิ่งที่ชอบ: ${profile['สิ่งที่ชอบ']}
-- สิ่งที่ไม่ชอบ: ${profile['สิ่งที่ไม่ชอบ']}
+- 性格: ${profile['性格']}
+- 外見と内面: ${profile['外見と内面']}
+- 接客スタイル: ${profile['接客スタイル']}
+- 話し方: ${profile['話し方']}
+- 好きなもの: ${profile['好きなもの']}
+- 嫌いなもの: ${profile['嫌いなもの']}
 ` : ''}
 
 ━━━━━━━━━━━━━━━━━━━━
