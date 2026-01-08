@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>Host Flirting App</title>
+    <link rel="stylesheet" href="/src/style.css">
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 min-h-screen">
+    <!-- Main Container -->
+    <div id="app" class="max-w-md mx-auto min-h-screen bg-gray-900 shadow-2xl relative">
+        
+        <!-- Host List View -->
+        <div id="hostListView" class="view">
+            <!-- Header -->
+            <header class="bg-gradient-to-r from-purple-800 to-pink-600 text-white p-6 sticky top-0 z-10 shadow-lg">
+                <h1 class="text-2xl font-bold text-center">✨ Host Club ✨</h1>
+                <p class="text-center text-sm mt-1 opacity-90">Select Your Host</p>
+            </header>
+
+            <!-- Host Cards Container -->
+            <div id="hostCardsContainer" class="p-4 space-y-4">
+                <!-- Host cards will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- Host Profile View -->
+        <div id="hostProfileView" class="view hidden">
+            <!-- Profile Header -->
+            <header class="bg-gradient-to-r from-purple-800 to-pink-600 text-white p-4 sticky top-0 z-10 shadow-lg">
+                <div class="flex items-center">
+                    <button id="backToListFromProfile" class="mr-3 hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    <h1 class="text-xl font-bold">Host Profile</h1>
+                </div>
+            </header>
+
+            <!-- Profile Content -->
+            <div id="profileContent" class="p-4">
+                <!-- Profile will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- Chat View -->
+        <div id="chatView" class="view hidden flex flex-col h-screen">
+            <!-- Chat Header -->
+            <header class="bg-gradient-to-r from-purple-800 to-pink-600 text-white p-4 shadow-lg flex-shrink-0">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <button id="backToListFromChat" class="mr-3 hover:scale-110 transition-transform">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                        <div class="flex items-center">
+                            <img id="chatHostAvatar" src="" alt="Host" class="w-10 h-10 rounded-full mr-2 border-2 border-white">
+                            <div>
+                                <h2 id="chatHostName" class="font-bold text-lg"></h2>
+                                <p class="text-xs opacity-90">Available Now</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Chat Messages -->
+            <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3">
+                <!-- Messages will be dynamically inserted here -->
+            </div>
+
+            <!-- Chat Input -->
+            <div class="bg-gray-800 p-4 border-t border-gray-700 flex-shrink-0">
+                <div class="flex space-x-2">
+                    <input 
+                        type="text" 
+                        id="chatInput" 
+                        placeholder="Type your message..."
+                        class="flex-1 bg-gray-700 text-white rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                    <button 
+                        id="sendButton"
+                        class="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full p-2 hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-gray-800 rounded-lg p-6 flex flex-col items-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mb-3"></div>
+                <p class="text-white">Loading...</p>
+            </div>
+        </div>
+
+        <!-- Error Toast -->
+        <div id="errorToast" class="hidden fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+            <p id="errorMessage"></p>
+        </div>
+
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
