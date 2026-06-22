@@ -3,21 +3,41 @@ let hosts = [];
 let currentHost = null;
 let chatHistory = [];
 
-// Emotion Face Map
-const emotionFaces = {
-  'neutral': '😐',
-  'happy': '😊',
-  'sad': '😢',
-  'angry': '😠',
-  'surprise': '😲',
-  'shy': '😳',
-  'laughing': '😆',
-  'disappoint': '😞',
-  'confident': '😎',
-  'crying': '😭',
-  'thinking': '🤔',
-  'sleepy': '😴'
+// Sprite sheet order: left-to-right, then top-to-bottom (4 columns x 3 rows).
+const emotionSprites = {
+  neutral: [0, 0],
+  happy: [1, 0],
+  sad: [2, 0],
+  angry: [3, 0],
+  surprise: [0, 1],
+  shy: [1, 1],
+  laughing: [2, 1],
+  disappoint: [3, 1],
+  confident: [0, 2],
+  crying: [1, 2],
+  thinking: [2, 2],
+  sleepy: [3, 2],
 };
+
+function setHostEmotion(emotion = 'neutral', animate = true) {
+  const sprite = document.getElementById('hostEmotionSprite');
+  if (!sprite) return;
+
+  const safeEmotion = emotionSprites[emotion] ? emotion : 'neutral';
+  const [column, row] = emotionSprites[safeEmotion];
+  const xPositions = ['0%', '33.333%', '66.667%', '100%'];
+  const yPositions = ['0%', '50%', '100%'];
+
+  sprite.style.backgroundPosition = `${xPositions[column]} ${yPositions[row]}`;
+  sprite.className = `host-emotion-sprite emotion-${safeEmotion}`;
+  sprite.setAttribute('aria-label', `Host expression: ${safeEmotion}`);
+
+  if (animate) {
+    sprite.classList.remove('emotion-change');
+    void sprite.offsetWidth;
+    sprite.classList.add('emotion-change');
+  }
+}
 
 // LocalStorage Helper Functions
 function saveChatSession(hostId, history) {
@@ -195,6 +215,7 @@ function showHostProfile(host) {
 // Start Chat
 function startChat(host) {
   currentHost = host;
+  setHostEmotion('neutral', false);
   
   // Load existing chat history from localStorage
   chatHistory = loadChatSession(host.id);
@@ -227,6 +248,10 @@ function startChat(host) {
         displayEmotion = emotionMatch[1];
         displayText = text.replace(/<face:.*?>/, '').trim();
       }
+
+      if (sender === 'host' && displayEmotion) {
+        setHostEmotion(displayEmotion, false);
+      }
       
       const bubbleClass = sender === 'user' 
         ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' 
@@ -235,11 +260,6 @@ function startChat(host) {
       messageDiv.innerHTML = `
         <div class="message-bubble ${bubbleClass} rounded-lg p-3 shadow-lg">
           <p class="text-sm">${escapeHtml(displayText)}</p>
-          ${displayEmotion && emotionFaces[displayEmotion] ? `
-            <div class="face-emotion mt-2">
-              ${emotionFaces[displayEmotion]}
-            </div>
-          ` : ''}
         </div>
       `;
       
@@ -275,6 +295,10 @@ function addMessage(sender, text, emotion = null) {
     displayEmotion = emotionMatch[1];
     displayText = text.replace(/<face:.*?>/, '').trim();
   }
+
+  if (sender === 'host') {
+    setHostEmotion(displayEmotion || 'neutral');
+  }
   
   const bubbleClass = sender === 'user' 
     ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' 
@@ -283,11 +307,6 @@ function addMessage(sender, text, emotion = null) {
   messageDiv.innerHTML = `
     <div class="message-bubble ${bubbleClass} rounded-lg p-3 shadow-lg">
       <p class="text-sm">${escapeHtml(displayText)}</p>
-      ${displayEmotion && emotionFaces[displayEmotion] ? `
-        <div class="face-emotion mt-2">
-          ${emotionFaces[displayEmotion]}
-        </div>
-      ` : ''}
     </div>
   `;
   
