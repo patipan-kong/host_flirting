@@ -84,8 +84,12 @@
   aspect-ratio: 9 / 8;
   background-image: url('/img/haruki/ai-host-face-emotion.png');
   background-repeat: no-repeat;
-  background-size: 400% 300%;
-  background-position: 0 0;
+  /*
+   * Zoom each grid cell slightly. The generated sprite has artwork crossing
+   * cell boundaries, so an exact 4x3 crop can reveal the adjacent face.
+   */
+  background-size: 448% 336%;
+  background-position: 1.724% 2.542%;
   filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.45));
   transform-origin: center bottom;
   animation: host-breathe 3.2s ease-in-out infinite;

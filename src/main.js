@@ -4,6 +4,8 @@ let currentHost = null;
 let chatHistory = [];
 
 // Sprite sheet order: left-to-right, then top-to-bottom (4 columns x 3 rows).
+// Positions use percentages so CSS can crop slightly inside each cell without
+// exposing a neighbouring face.
 const emotionSprites = {
   neutral: [0, 0],
   happy: [1, 0],
@@ -19,16 +21,29 @@ const emotionSprites = {
   sleepy: [3, 2],
 };
 
+const SPRITE_COLUMNS = 4;
+const SPRITE_ROWS = 3;
+const SPRITE_ZOOM = 1.12;
+
+function getSpritePosition(index, cellCount) {
+  const offset =
+    (0.5 - (index + 0.5) * SPRITE_ZOOM) /
+    (1 - cellCount * SPRITE_ZOOM);
+
+  return `${offset * 100}%`;
+}
+
 function setHostEmotion(emotion = 'neutral', animate = true) {
   const sprite = document.getElementById('hostEmotionSprite');
   if (!sprite) return;
 
   const safeEmotion = emotionSprites[emotion] ? emotion : 'neutral';
   const [column, row] = emotionSprites[safeEmotion];
-  const xPositions = ['0%', '33.333%', '66.667%', '100%'];
-  const yPositions = ['0%', '50%', '100%'];
 
-  sprite.style.backgroundPosition = `${xPositions[column]} ${yPositions[row]}`;
+  sprite.style.backgroundPosition = [
+    getSpritePosition(column, SPRITE_COLUMNS),
+    getSpritePosition(row, SPRITE_ROWS),
+  ].join(' ');
   sprite.className = `host-emotion-sprite emotion-${safeEmotion}`;
   sprite.setAttribute('aria-label', `Host expression: ${safeEmotion}`);
 
