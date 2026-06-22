@@ -1,12 +1,7 @@
-// Import Google Generative AI
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
 // Global State
 let hosts = [];
 let currentHost = null;
 let chatHistory = [];
-let genAI = null;
-let model = null;
 
 // Emotion Face Map
 const emotionFaces = {
@@ -41,6 +36,15 @@ function clearChatSession(hostId) {
   localStorage.removeItem(key);
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
 // Initialize App
 async function initApp() {
   try {
@@ -51,15 +55,6 @@ async function initApp() {
     if (!response.ok) throw new Error('Failed to load host profiles');
     
     hosts = await response.json();
-    
-    // Initialize Gemini API from environment variable
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (apiKey) {
-      genAI = new GoogleGenerativeAI(apiKey);
-      model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    } else {
-      console.warn('VITE_GEMINI_API_KEY not found in environment variables');
-    }
     
     // Render host list
     renderHostList();
@@ -239,7 +234,7 @@ function startChat(host) {
       
       messageDiv.innerHTML = `
         <div class="message-bubble ${bubbleClass} rounded-lg p-3 shadow-lg">
-          <p class="text-sm">${displayText}</p>
+          <p class="text-sm">${escapeHtml(displayText)}</p>
           ${displayEmotion && emotionFaces[displayEmotion] ? `
             <div class="face-emotion mt-2">
               ${emotionFaces[displayEmotion]}
@@ -287,7 +282,7 @@ function addMessage(sender, text, emotion = null) {
   
   messageDiv.innerHTML = `
     <div class="message-bubble ${bubbleClass} rounded-lg p-3 shadow-lg">
-      <p class="text-sm">${displayText}</p>
+      <p class="text-sm">${escapeHtml(displayText)}</p>
       ${displayEmotion && emotionFaces[displayEmotion] ? `
         <div class="face-emotion mt-2">
           ${emotionFaces[displayEmotion]}
@@ -340,12 +335,6 @@ async function sendMessage() {
   
   if (!message) return;
   
-  // Validate API key
-  if (!genAI || !model) {
-    showError('Gemini API key is not configured. Please refresh the page and enter your API key.');
-    return;
-  }
-  
   // Add user message
   addMessage('user', message);
   input.value = '';
@@ -358,6 +347,24 @@ async function sendMessage() {
   showTypingIndicator(true);
   
   try {
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        hostId: currentHost.id,
+        message,
+        history: chatHistory.slice(0, -1),
+      }),
+    });
+
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(payload.error || 'Unable to get a response');
+    }
+
+    /*
     // Build system prompt
     const systemPrompt = buildSystemPrompt(currentHost);
     
@@ -380,11 +387,12 @@ async function sendMessage() {
     const response = await result.response;
     const responseText = response.text();
     
+    */
     // Hide typing
     showTypingIndicator(false);
     
     // Add host response
-    addMessage('host', responseText);
+    addMessage('host', payload.text);
     
   } catch (error) {
     console.error('Chat error:', error);

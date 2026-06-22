@@ -79,6 +79,19 @@ Any response missing the emotion tag is INVALID.
 - **Session management**: Optional localStorage for data persistence
 - **Error handling**: Graceful fallbacks and user-friendly error messages
 - **Chat**: Using prompt api with gemini
+- **API security**: Gemini requests go through a Vercel serverless function, so the API key is not bundled into browser JavaScript
+
+### Vercel environment variables
+
+Configure these in Vercel Project Settings → Environment Variables:
+
+```text
+GEMINI_API_KEY=your_server_only_key
+APP_ORIGIN=https://your-production-domain.example
+```
+
+`APP_ORIGIN` is optional but recommended in production. Never use a `VITE_`
+prefix for secrets because Vite exposes referenced `VITE_*` values to client code.
 
 ---
 
