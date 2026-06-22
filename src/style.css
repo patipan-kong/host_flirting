@@ -65,7 +65,7 @@
   animation: slideUp 0.3s ease-out;
 }
 
-/* Character sprite sheet: 4 columns x 3 rows. */
+/* Animated character portrait. */
 .host-stage {
   min-height: 260px;
   padding: 10px 16px;
@@ -79,45 +79,40 @@
   border-bottom: 1px solid rgba(168, 85, 247, 0.35);
 }
 
-.host-emotion-sprite {
+.host-emotion-image {
   width: min(100%, 320px);
-  aspect-ratio: 9 / 8;
-  background-image: url('/img/haruki/ai-host-face-emotion.png');
-  background-repeat: no-repeat;
-  /*
-   * Zoom each grid cell slightly. The generated sprite has artwork crossing
-   * cell boundaries, so an exact 4x3 crop can reveal the adjacent face.
-   */
-  background-size: 448% 336%;
-  background-position: 1.724% 2.542%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  display: block;
+  border-radius: 16px;
   filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.45));
   transform-origin: center bottom;
   animation: host-breathe 3.2s ease-in-out infinite;
   will-change: transform, opacity;
 }
 
-.host-emotion-sprite.emotion-change {
+.host-emotion-image.emotion-change {
   animation:
     emotion-pop 0.42s ease-out,
     host-breathe 3.2s 0.42s ease-in-out infinite;
 }
 
-.host-emotion-sprite.emotion-angry,
-.host-emotion-sprite.emotion-surprise {
+.host-emotion-image.emotion-angry,
+.host-emotion-image.emotion-surprise {
   animation:
     emotion-shake 0.38s ease-out,
     host-breathe 3.2s 0.38s ease-in-out infinite;
 }
 
-.host-emotion-sprite.emotion-happy,
-.host-emotion-sprite.emotion-laughing {
+.host-emotion-image.emotion-happy,
+.host-emotion-image.emotion-laughing {
   animation:
     emotion-bounce 0.55s ease-out,
     host-breathe 3.2s 0.55s ease-in-out infinite;
 }
 
-.host-emotion-sprite.emotion-shy,
-.host-emotion-sprite.emotion-sleepy {
+.host-emotion-image.emotion-shy,
+.host-emotion-image.emotion-sleepy {
   animation:
     emotion-sway 0.8s ease-in-out,
     host-breathe 3.2s 0.8s ease-in-out infinite;
@@ -180,14 +175,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .host-emotion-sprite,
-  .host-emotion-sprite.emotion-change,
-  .host-emotion-sprite.emotion-angry,
-  .host-emotion-sprite.emotion-surprise,
-  .host-emotion-sprite.emotion-happy,
-  .host-emotion-sprite.emotion-laughing,
-  .host-emotion-sprite.emotion-shy,
-  .host-emotion-sprite.emotion-sleepy {
+  .host-emotion-image,
+  .host-emotion-image.emotion-change,
+  .host-emotion-image.emotion-angry,
+  .host-emotion-image.emotion-surprise,
+  .host-emotion-image.emotion-happy,
+  .host-emotion-image.emotion-laughing,
+  .host-emotion-image.emotion-shy,
+  .host-emotion-image.emotion-sleepy {
     animation: none;
   }
 }

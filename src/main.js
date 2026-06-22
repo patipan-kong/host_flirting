@@ -3,54 +3,24 @@ let hosts = [];
 let currentHost = null;
 let chatHistory = [];
 
-// Sprite sheet order: left-to-right, then top-to-bottom (4 columns x 3 rows).
-// Positions use percentages so CSS can crop slightly inside each cell without
-// exposing a neighbouring face.
-const emotionSprites = {
-  neutral: [0, 0],
-  happy: [1, 0],
-  sad: [2, 0],
-  angry: [3, 0],
-  surprise: [0, 1],
-  shy: [1, 1],
-  laughing: [2, 1],
-  disappoint: [3, 1],
-  confident: [0, 2],
-  crying: [1, 2],
-  thinking: [2, 2],
-  sleepy: [3, 2],
-};
-
-const SPRITE_COLUMNS = 4;
-const SPRITE_ROWS = 3;
-const SPRITE_ZOOM = 1.12;
-
-function getSpritePosition(index, cellCount) {
-  const offset =
-    (0.5 - (index + 0.5) * SPRITE_ZOOM) /
-    (1 - cellCount * SPRITE_ZOOM);
-
-  return `${offset * 100}%`;
-}
+const allowedEmotions = new Set([
+  'neutral', 'happy', 'sad', 'angry', 'surprise', 'shy',
+  'laughing', 'disappoint', 'confident', 'crying', 'thinking', 'sleepy',
+]);
 
 function setHostEmotion(emotion = 'neutral', animate = true) {
-  const sprite = document.getElementById('hostEmotionSprite');
-  if (!sprite) return;
+  const image = document.getElementById('hostEmotionImage');
+  if (!image) return;
 
-  const safeEmotion = emotionSprites[emotion] ? emotion : 'neutral';
-  const [column, row] = emotionSprites[safeEmotion];
-
-  sprite.style.backgroundPosition = [
-    getSpritePosition(column, SPRITE_COLUMNS),
-    getSpritePosition(row, SPRITE_ROWS),
-  ].join(' ');
-  sprite.className = `host-emotion-sprite emotion-${safeEmotion}`;
-  sprite.setAttribute('aria-label', `Host expression: ${safeEmotion}`);
+  const safeEmotion = allowedEmotions.has(emotion) ? emotion : 'neutral';
+  image.src = `/img/haruki/emotions/${safeEmotion}.png`;
+  image.className = `host-emotion-image emotion-${safeEmotion}`;
+  image.alt = `Host expression: ${safeEmotion}`;
 
   if (animate) {
-    sprite.classList.remove('emotion-change');
-    void sprite.offsetWidth;
-    sprite.classList.add('emotion-change');
+    image.classList.remove('emotion-change');
+    void image.offsetWidth;
+    image.classList.add('emotion-change');
   }
 }
 
